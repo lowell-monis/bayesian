@@ -1,0 +1,127 @@
+---
+title: "Homework 1"
+subtitle: "STT 465, Bayesian Statistical Methods"
+date: "September 10, 2025"
+author: "Lowell Monis"
+output:
+  pdf_document:
+    toc: false
+---
+
+
+```{r global_options, echo=FALSE, warning = FALSE, results = 'hide', message=FALSE}
+library(knitr)
+opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  error = FALSE
+)
+```
+
+## Question 1
+
+### (a) 10 points
+
+Two factories I and II produce phones for brand ABC. Factory I produces 60% of all ABC phones, and factory II produces 40%. 10% of phones produced by factory I are defective, and 20% of those produced by factory II are defective. You purchase a brand ABC phone, and assume this phone is randomly chosen. Suppose the phone is not defective. What is the probability that it came from factory II?
+
+### Answer
+
+First, I establish the events for this problem:
+
+$D$: A phone is defective.
+
+$D^c$: A phone is not defective.
+
+$F_1$: A phone is from factory I.
+
+$F_2$: A phone is from factory II.
+
+I now define the probabilities from the problem statement:
+
+\begin{align*}
+P(F_1)&=0.60\\
+P(F_2)&=0.40\\
+P(D|F_1)&=0.10\\
+P(D|F_2)&=0.20
+\end{align*}
+
+I need to find the probability that a phone came from factory II, given that it is not defective. Thus, I need to find $P(F_2|D^c)$.
+
+To go ahead with this problem, I am finding the overall probability of a randomly chosen phone being non-defective. I can do this using the Law of Total Probability.
+
+Before that, I need to find conditional probabilities for each factory when the phone is non-defective.
+
+\begin{align*}
+P(D^c|F_1)&=1-P(D|F_1)=1-0.10=0.90\\
+P(D^c|F_2)&=1-P(D|F_2)=1-0.20=0.80
+\end{align*}
+
+The total probability that a randomly chosen phone is not defective can be written as:
+
+\begin{align*}
+P(D^c)&=P(D^c!F_1)\cdot P(F_1)+P(D^c|F_2)\cdot P(F_2)\\
+&=0.90\cdot0.60+0.80\cdot0.40\\
+&=0.54+0.32\\
+&=0.86
+\end{align*}
+
+Now, I can apply Bayes' theorem to find the probability that the given phone is from factory II if it is not defective:
+
+\begin{align*}
+P(F_2|D^c)&=\frac{P(D^c|F_2)\cdot P(F_2)}{P(D^c)}\\
+&=\frac{0.80\cdot0.40}{0.86}\\
+&=\frac{0.32}{0.86}\\
+&=`r 0.32/0.86`\approx0.37
+\end{align*}
+
+**Answer:** There is a 37% chance a randomly selected ABC phone that is not defective was produced in factory II.
+
+### (b) 10 points
+
+In answering a question on a multiple-choice test, a student either knows the answer or guesses. Let $p$ be the probability that the student knows the answer and $1-p$ be the probability that the student guesses. Assume that a student who guesses at the answer will be correct with probability $\frac{1}{m}$, where $m$ is the number of multiple-choice alternatives. What is the probability that a student knew the answer to a question given that he or she answered it correctly?
+
+### Answer
+
+First, I establish the events for this problem:
+
+$K$: The student knows the answer.
+
+$G$: The student guesses the answer.
+
+$C$: The student answers the questions correctly.
+
+I now define the probabilities from the problem statement:
+
+\begin{align*}
+P(K)&=p\\
+P(G)&=1-p\\
+P(C|K)&=1\\
+P(C|G)&=\frac{1}{m}
+\end{align*}
+
+$P(C|K)=1$ because the chances of the student answering the question correctly if they know the answer is 100%.
+
+I need to find the probability that a student knew the answer, given that they answered it correctly. I need to find $P(K|C)$.
+
+To go ahead with this problem, I am finding the overall probability of a student getting the correct answer. I can do this using the Law of Total Probability.
+
+The two ways established to get a correct answer is either by guessing or knowing the answer.
+
+\begin{align*}
+P(C)&=P(C|K)\cdot P(K) + P(C|G)\cdot P(G)\\
+&=1\cdot p + \frac{1}{m}\cdot(1-p)\\
+&=p+\frac{1-p}{m}\\
+&=\frac{mp+1-p}{m}
+\end{align*}
+
+Now, I can apply Bayes' theorem to find the probability that the student knew the answer if they got it correct:
+
+\begin{align*}
+P(K|C)&=\frac{P(C|K)\cdot P(K)}{P(C)}\\
+&=\frac{1\cdot p}{\frac{mp+1-p}{m}}\\
+&=\frac{p}{\frac{mp+1-p}{m}}\\
+&=\frac{mp}{mp+1-p}
+\end{align*}
+
+**Answer:** The probability that a student knew the answer if they got it correct can be expressed as $\frac{mp}{mp+1-p}$, where $p$ is the probability that the student knows the answer, and $m$ is the number of multiple-choice alternatives on the question.
