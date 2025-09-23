@@ -29,7 +29,34 @@ For $\sigma=2$, write the formula for the marginal probability density for $y$. 
 
 ### Answer
 
+For $\sigma=2$, the marginal (mixture) density of $y$ is
 
+\[
+f_Y(y) \;=\; \tfrac12 \cdot \frac{1}{2\sqrt{2\pi}} 
+\exp\!\left(-\frac{(y-1)^2}{8}\right)
+\;+\; \tfrac12 \cdot \frac{1}{2\sqrt{2\pi}} 
+\exp\!\left(-\frac{(y-2)^2}{8}\right).
+\]
+
+Equivalently,
+
+\[
+f_Y(y) \;=\; \frac{1}{4}\left[
+\varphi\!\left(\tfrac{y-1}{2}\right) 
++ \varphi\!\left(\tfrac{y-2}{2}\right)
+\right],
+\]
+
+where $\varphi(t)=\tfrac{1}{\sqrt{2\pi}}e^{-t^2/2}$ is the standard normal density.
+
+The density can be plotted as follows:
+
+```{r}
+f <- function(y) 0.5*dnorm(y, mean=1, sd=2) + 0.5*dnorm(y, mean=2, sd=2)
+ys <- seq(-4, 7, length=1000)
+plot(ys, f(ys), type="l", lwd=2, main="Marginal density of Y",
+     xlab="y", ylab="f")
+```
 
 ### (b) 5 points
 
@@ -37,7 +64,50 @@ What is $P(\theta=1|y=1)$ for $\sigma=2$.
 
 ### Answer
 
+By Bayes' rule, the posterior probability that $\theta=1$ given $Y=y$ is
+\[
+P(\theta=1\mid y)
+=\frac{P(\theta=1)f(y\mid\theta=1)}{P(\theta=1)f(y\mid\theta=1)+P(\theta=2)f(y\mid\theta=2)}
+=\frac{f(y\mid\theta=1)}{f(y\mid\theta=1)+f(y\mid\theta=2)},
+\]
+since $P(\theta=1)=P(\theta=2)=1/2$.
 
+For the normal likelihoods with common standard deviation \(\sigma\),
+\[
+f(y\mid\theta=i)=\frac{1}{\sigma\sqrt{2\pi}}
+\exp\!\left(-\frac{(y-i)^2}{2\sigma^2}\right),\qquad i=1,2.
+\]
+Thus
+\[
+P(\theta=1\mid y)=\frac{\exp\!\big(-\frac{(y-1)^2}{2\sigma^2}\big)}
+{\exp\!\big(-\frac{(y-1)^2}{2\sigma^2}\big)+\exp\!\big(-\frac{(y-2)^2}{2\sigma^2}\big)}.
+\]
+
+Now plug in \(\sigma=2\) and \(y=1\). For \(\sigma=2\),
+\[
+f(1\mid\theta=1)=\frac{1}{2\sqrt{2\pi}},\qquad
+f(1\mid\theta=2)=\frac{1}{2\sqrt{2\pi}}\exp\!\left(-\frac{1^2}{8}\right).
+\]
+
+\[
+\sqrt{2\pi}\approx 2.50662827463,\qquad
+\frac{1}{2\sqrt{2\pi}}\approx 0.19947114020071635,
+\]
+and
+\[
+\exp\!\left(-\tfrac{1}{8}\right)\approx 0.8824969025845955,
+\]
+so
+\[
+f(1\mid2)\approx 0.19947114020071635\times 0.8824969025845955
+\approx 0.17603266338214976.
+\]
+Therefore
+\[
+P(\theta=1\mid y=1)=\frac{0.19947114020071635}
+{0.19947114020071635 + 0.17603266338214976}
+\approx \boxed{0.5312093734}.
+\]
 
 ### (c) 10 points
 
@@ -45,7 +115,51 @@ Describe how the posterior density of $\theta$ changes in shape as $\theta$ is i
 
 ### Answer
 
+We derive a compact analytic form for the posterior and then analyze how its shape depends on \(\sigma\).
 
+Starting from
+\[
+P(\theta=1\mid y)
+=\frac{\exp\!\big(-\tfrac{(y-1)^2}{2\sigma^2}\big)}
+{\exp\!\big(-\tfrac{(y-1)^2}{2\sigma^2}\big)
++\exp\!\big(-\tfrac{(y-2)^2}{2\sigma^2}\big)},
+\]
+divide numerator and denominator by \(\exp\!\big(-\tfrac{(y-1)^2}{2\sigma^2}\big)\) to obtain
+\[
+P(\theta=1\mid y)
+=\frac{1}{1+\exp\!\Big(\dfrac{(y-1)^2-(y-2)^2}{2\sigma^2}\Big)}.
+\]
+Compute the quadratic difference:
+\[
+(y-1)^2-(y-2)^2 = (y^2-2y+1)-(y^2-4y+4) = 2y-3.
+\]
+Hence the posterior simplifies to the logistic form
+\[
+\boxed{\,P(\theta=1\mid y)=\frac{1}{1+\exp\!\big(\frac{2y-3}{2\sigma^2}\big)}\,.}
+\]
+
+The posterior probability is
+\[
+P(\theta=1\mid y)=\frac{1}{1+\exp\!\left(\frac{2y-3}{2\sigma^2}\right)}
+\]
+
+```{r}
+posterior <- function(y, sigma) {
+  num <- exp(- (y-1)^2 / (2*sigma^2))
+  den <- num + exp(- (y-2)^2 / (2*sigma^2))
+  num/den
+}
+ys <- seq(-1, 5, length=1000)
+plot(ys, posterior(ys, 0.5), type="l", lwd=2, ylim=c(0,1),
+     main="P(theta=1 | y) for different sigma", xlab="y", ylab="P")
+lines(ys, posterior(ys, 1), lty=2)
+lines(ys, posterior(ys, 2), lty=3)
+lines(ys, posterior(ys, 5), lty=4)
+legend("topright", legend=c("sigma=0.5","sigma=1","sigma=2","sigma=5"),
+       lty=1:4, bty="n")
+```
+
+Posterior and prior are closer at a higher value of $\sigma$.
 
 ## Question 2
 
@@ -68,7 +182,20 @@ The marginal density for a father’s occupation.
 
 ### Answer
 
+The marginal distribution of the father’s occupation is obtained by summing over the son’s occupation:
+\[
+p_{Y_1}(y_1) = \sum_{y_2} p(y_1,y_2).
+\]
 
+\[
+\begin{aligned}
+p_{Y_1}(\text{farm}) &= 0.018+0.035+0.031+0.008+0.018 = 0.110,\\
+p_{Y_1}(\text{operatives}) &= 0.002+0.112+0.064+0.032+0.069 = 0.279,\\
+p_{Y_1}(\text{craftsmen}) &= 0.001+0.066+0.094+0.032+0.084 = 0.277,\\
+p_{Y_1}(\text{sales}) &= 0.001+0.018+0.019+0.010+0.051 = 0.099,\\
+p_{Y_1}(\text{professional}) &= 0.001+0.029+0.032+0.043+0.130 = 0.235.
+\end{aligned}
+\]
 
 ### (b) 5 points
 
@@ -76,7 +203,20 @@ The marginal density for a son’s occupation.
 
 ### Answer
 
+The marginal distribution of the son’s occupation is obtained by summing over the father’s occupation:
+\[
+p_{Y_2}(y_2) = \sum_{y_1} p(y_1,y_2).
+\]
 
+\[
+\begin{aligned}
+p_{Y_2}(\text{farm}) &= 0.018+0.002+0.001+0.001+0.001 = 0.023,\\
+p_{Y_2}(\text{operatives}) &= 0.035+0.112+0.066+0.018+0.029 = 0.260,\\
+p_{Y_2}(\text{craftsmen}) &= 0.031+0.064+0.094+0.019+0.032 = 0.240,\\
+p_{Y_2}(\text{sales}) &= 0.008+0.032+0.032+0.010+0.043 = 0.125,\\
+p_{Y_2}(\text{professional}) &= 0.018+0.069+0.084+0.051+0.130 = 0.352.
+\end{aligned}
+\]
 
 ### (c) 5 points
 
@@ -84,6 +224,31 @@ The conditional density of a son’s occupation given that the father’s occupa
 
 ### Answer
 
+We compute
+\[
+p_{Y_2 \mid Y_1}(y_2 \mid Y_1=\text{craftsman})
+= \frac{p(Y_1=\text{craftsman}, y_2)}{p_{Y_1}(\text{craftsman})},
+\]
+where
+\[
+p_{Y_1}(\text{craftsman}) = 0.277.
+\]
+
+Thus,
+\[
+\begin{aligned}
+p_{Y_2 \mid Y_1}(\text{farm} \mid \text{craftsman})
+&= \tfrac{0.001}{0.277} \approx 0.00361,\\
+p_{Y_2 \mid Y_1}(\text{operatives} \mid \text{craftsman})
+&= \tfrac{0.066}{0.277} \approx 0.23827,\\
+p_{Y_2 \mid Y_1}(\text{craftsmen} \mid \text{craftsman})
+&= \tfrac{0.094}{0.277} \approx 0.33935,\\
+p_{Y_2 \mid Y_1}(\text{sales} \mid \text{craftsman})
+&= \tfrac{0.032}{0.277} \approx 0.11552,\\
+p_{Y_2 \mid Y_1}(\text{professional} \mid \text{craftsman})
+&= \tfrac{0.084}{0.277} \approx 0.30325.
+\end{aligned}
+\]
 
 ## Question 3
 
@@ -97,7 +262,40 @@ Check that $f_{X,Y}$ is a joint density function.
 
 ### Answer
 
+Let
 
+\[
+f_{X,Y}(x,y)=
+\begin{cases}
+\dfrac{1}{4}(x+y), & 0\le x\le y\le 2,\\[6pt]
+0, & \text{otherwise.}
+\end{cases}
+\]
+
+We check that the integral of \(f_{X,Y}\) over its support equals 1:
+
+\[
+\iint_{0\le x\le y\le 2}\frac{1}{4}(x+y)\,dx\,dy
+=\int_{y=0}^{2}\int_{x=0}^{y}\frac{1}{4}(x+y)\,dx\,dy.
+\]
+
+Compute the inner integral:
+
+\[
+\int_{x=0}^{y}(x+y)\,dx
+=\left[\frac{x^2}{2}+yx\right]_{0}^{y}
+=\frac{y^2}{2}+y^2=\frac{3}{2}y^2.
+\]
+
+Multiply by \(\tfrac{1}{4}\) and integrate in \(y\):
+
+\[
+\int_{0}^{2}\frac{1}{4}\cdot\frac{3}{2}y^2\,dy
+=\frac{3}{8}\int_{0}^{2}y^2\,dy
+=\frac{3}{8}\cdot\frac{2^3}{3}=1.
+\]
+
+Hence the total probability is \(1\), so \(f_{X,Y}\) is a valid joint density.
 
 ### (b) 5 points
 
@@ -105,7 +303,61 @@ Calculate the probability $P\{Y<2X\}$.
 
 ### Answer
 
+We want the probability of the set \(\{(x,y):0\le x\le y\le 2,\; y<2x\}\).
 
+For a given \(x\) the upper limit for \(y\) is \(\min(2x,2)\). Thus we split the \(x\)-integration:
+
+\[
+P(Y<2X)=\int_{x=0}^{1}\int_{y=x}^{2x}\frac{1}{4}(x+y)\,dy\,dx
++\int_{x=1}^{2}\int_{y=x}^{2}\frac{1}{4}(x+y)\,dy\,dx.
+\]
+
+First term: for \(0\le x\le 1\),
+
+\[
+\int_{y=x}^{2x}(x+y)\,dy
+=\Big[xy+\tfrac{1}{2}y^2\Big]_{y=x}^{2x}
+=(2x^2+2x^2)-(x^2+\tfrac{1}{2}x^2)
+=\frac{5}{2}x^2.
+\]
+
+Multiplying by \(\tfrac{1}{4}\) and integrating \(x\) from 0 to 1 gives
+
+\[
+\int_{0}^{1}\frac{1}{4}\cdot\frac{5}{2}x^2\,dx
+=\frac{5}{8}\int_{0}^{1}x^2\,dx
+=\frac{5}{8}\cdot\frac{1}{3}=\frac{5}{24}.
+\]
+
+Second term: for \(1\le x\le 2\),
+
+\[
+\int_{y=x}^{2}(x+y)\,dy
+=\Big[xy+\tfrac{1}{2}y^2\Big]_{y=x}^{2}
+=(2x+2)-\frac{3}{2}x^2.
+\]
+
+Multiply by \(\tfrac{1}{4}\) to get the integrand in \(x\):
+
+\[
+\frac{1}{4}\big(2x+2-\tfrac{3}{2}x^2\big)=\frac{1}{2}x+\frac{1}{2}-\frac{3}{8}x^2.
+\]
+
+Integrate this from \(x=1\) to \(2\):
+
+\[
+\int_{1}^{2}\left(\frac{1}{2}x+\frac{1}{2}-\frac{3}{8}x^2\right)dx
+=\left[\frac{1}{4}x^2+\frac{1}{2}x-\frac{1}{8}x^3\right]_{1}^{2}
+=\left(\frac{1}{4}\cdot4+\frac{1}{2}\cdot2-\frac{1}{8}\cdot8\right)
+-\left(\frac{1}{4}+\frac{1}{2}-\frac{1}{8}\right)
+=\frac{3}{8}.
+\]
+
+Combine both parts:
+
+\[
+P(Y<2X)=\frac{5}{24}+\frac{3}{8}=\frac{5}{24}+\frac{9}{24}=\frac{14}{24}=\boxed{\frac{7}{12}}.
+\]
 
 ### (c) 10 points
 
@@ -113,7 +365,20 @@ Find the marginal density function $f_Y(y)$ of Y.
 
 ### Answer
 
+For \(0\le y\le 2\),
 
+\[
+f_Y(y)=\int_{x=0}^{y}\frac{1}{4}(x+y)\,dx
+=\frac{1}{4}\left[\frac{x^2}{2}+yx\right]_{0}^{y}
+=\frac{1}{4}\left(\frac{y^2}{2}+y^2\right)
+=\frac{3}{8}y^2.
+\]
+
+Thus
+
+\[
+\boxed{\,f_Y(y)=\frac{3}{8}y^2,\quad 0\le y\le 2,\quad\text{and }f_Y(y)=0\text{ otherwise.}}
+\]
 
 ## Question 4 (5 points)
 
@@ -121,7 +386,49 @@ Suppose $X\sim\text{Beta}(a,b)$. Derive $E(X^2)$.
 
 ### Answer
 
+Suppose \(X\sim\operatorname{Beta}(a,b)\) with density
 
+\[
+f_X(x)=\frac{1}{B(a,b)}x^{a-1}(1-x)^{b-1},\qquad 0<x<1,
+\]
+
+where \(B(a,b)=\dfrac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}\).
+
+We compute \(E[X^2]\):
+
+\[
+E[X^2]=\int_{0}^{1}x^2\frac{1}{B(a,b)}x^{a-1}(1-x)^{b-1}\,dx
+=\frac{1}{B(a,b)}\int_{0}^{1}x^{a+1}(1-x)^{b-1}\,dx.
+\]
+
+The integral is a Beta function:
+
+\[
+\int_{0}^{1}x^{a+1}(1-x)^{b-1}\,dx = B(a+2,b).
+\]
+
+Therefore
+
+\[
+E[X^2]=\frac{B(a+2,b)}{B(a,b)}
+=\frac{\Gamma(a+2)\Gamma(b)/\Gamma(a+b+2)}
+{\Gamma(a)\Gamma(b)/\Gamma(a+b)}
+=\frac{\Gamma(a+2)\,\Gamma(a+b)}{\Gamma(a)\,\Gamma(a+b+2)}.
+\]
+
+Use \(\Gamma(a+2)=a(a+1)\Gamma(a)\) and \(\Gamma(a+b+2)=(a+b)(a+b+1)\Gamma(a+b)\) to simplify:
+
+\[
+E[X^2]=\frac{a(a+1)\Gamma(a)\,\Gamma(a+b)}
+{\Gamma(a)\,(a+b)(a+b+1)\Gamma(a+b)}
+=\frac{a(a+1)}{(a+b)(a+b+1)}.
+\]
+
+Hence
+
+\[
+\boxed{\,E[X^2]=\dfrac{a(a+1)}{(a+b)(a+b+1)}\,.}
+\]
 
 
 ***
